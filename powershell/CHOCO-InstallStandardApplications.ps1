@@ -1,21 +1,34 @@
-param(
-    $ErrorActionPreference = "Continue",
-    $SkipRestart = 'False',
-    $VerbosePreference = "Continue"
-)
+function Install-RequiredPackages {
+    # Check if Chocolatey is installed
+    try {
+        choco -v | Out-Null
+    }
+    catch {
+        # Install Chocolatey
+        Write-Host "Installing Chocolatey..."
+        Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+    }
 
-# https://github.com/microsoft/winget-cli/releases/download/v1.4.11071/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
-$localPackage = "C:\Windows\Temp\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle";
-Invoke-WebRequest ("https://github.com/microsoft/winget-cli/releases/download/v1.4.11071/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle") -OutFile $localPackage;
+    # Install Visual Studio 2019 Community Edition
+    Write-Host "Installing Visual Studio 2019..."
+    choco install visualstudio2019community -y
 
-# https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx
-$vcLibs = "C:\Windows\Temp\Microsoft.VCLibs.x64.14.00.Desktop.appx";
-Invoke-WebRequest ("https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx") -OutFile $vcLibs;
+    # Install .NET Framework 4.7 SDK
+    Write-Host "Installing .NET Framework 4.7 SDK..."
+    choco install netfx-4.7-devpack -y
 
-# https://github.com/microsoft/winget-cli/releases/download/v1.4.11071/5d9d44b170c146e1a3085c2c75fcc2c1_License1.xml
-$license = "C:\Windows\Temp\3463fe9ad25e44f28630526aa9ad5648_License1.xml";
-Invoke-WebRequest ("https://github.com/microsoft/winget-cli/releases/download/v1.4.10173/3463fe9ad25e44f28630526aa9ad5648_License1.xml") -OutFile $license;
+    # Install .NET Framework 4.8 SDK
+    Write-Host "Installing .NET Framework 4.8 SDK..."
+    choco install netfx-4.8-devpack -y
 
-Add-AppxProvisionedPackage -online -PackagePath $localPackage -LicensePath $license -DependencyPackagePath $vclibs;
+    # Install .NET Core 3.1 SDK
+    Write-Host "Installing .NET Core 3.1 SDK..."
+    choco install dotnetcore-sdk -y --version=3.1.403
 
-if ($SkipRestart -ne 'True') { Restart-Computer -Verbose -Force; }
+    # Install PowerShell 7
+    Write-Host "Installing PowerShell 7..."
+    choco install powershell-core -y
+}
+
+# Run the function to install required packages
+Install-RequiredPackages
